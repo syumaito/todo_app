@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'text_area.dart';
+import 'card.dart';
 
 void main() {
   runApp(const MainPage());
@@ -38,11 +40,23 @@ class _TextInputWidgetState extends State<TextInputWidget> {
         itemCount: todoList.length + 1,
         itemBuilder: (BuildContext context, int index) {
           if (index == todoList.length) {
-            return _createTextArea();
-          } else {
-            var title = todoList[index];
-            return _createTodoCard(title, index);
+            return TextArea(
+              controller: _controller,
+              onPressedSubmitButton: _submitTodo,
+              onSubmitted: _submitTodo,
+            );
           }
+          var title = todoList[index];
+          return TodoCard(
+            title: title,
+            index: index,
+            onPressedComplete: () {
+              _complete(index);
+            },
+            onPressedDelete: () {
+              _delete(index);
+            },
+          );
         },
       ),
     );
@@ -54,92 +68,6 @@ class _TextInputWidgetState extends State<TextInputWidget> {
     _controller.dispose();
   }
 
-  Widget _createTodoCard(String title, int index) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
-      margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
-      child: Column(
-        mainAxisSize: MainAxisSize.max,
-        children: [
-          TextField(),//期限入力するUIつくる
-          ListTile(title: Text(title)),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              ElevatedButton(
-                onPressed: () {
-                  _complete(index); //完了タップ時の処理変更する(保存)、今は削除する処理になってる
-                },
-                style: ElevatedButton.styleFrom(
-                  side: BorderSide(color: Colors.blue),
-                ),
-                child: const Text("完了"),
-              ),
-              const SizedBox(width: 10.0),
-              ElevatedButton(
-                onPressed: () {
-                  _delete(index);
-                },
-                style: ElevatedButton.styleFrom(
-                  side: BorderSide(color: Colors.blue),
-                ),
-                child: const Text("削除"),
-              ),
-              const SizedBox(width: 10.0),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _createTextArea() {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
-      margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10.0),
-            child: TextField(
-              controller: _controller,
-              decoration: const InputDecoration(hintText: "タップして入力",hintStyle: TextStyle(color: Colors.grey)),
-              onChanged: (String value) {
-                print(value);
-              },
-              onSubmitted: _submitTodo,
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 10.0,
-              vertical: 5.0,
-            ),
-            child: ElevatedButton(
-              onPressed: () {
-                _submitTodo(_controller.text);
-              },
-              style: ElevatedButton.styleFrom(
-                side: BorderSide(color: Colors.blue),
-              ),
-              child: const Text("カード追加"),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _submitTodo(String title) {
-    setState(() {
-      if (title.isEmpty == false) {
-        todoList.add(title);
-        _controller.clear();
-      }
-    });
-  }
-
   void _complete(int index) {
     setState(() {
       todoList.removeAt(index);
@@ -149,6 +77,15 @@ class _TextInputWidgetState extends State<TextInputWidget> {
   void _delete(int index) {
     setState(() {
       todoList.removeAt(index);
+    });
+  }
+
+  void _submitTodo(String title) {
+    setState(() {
+      if (title.isEmpty == false) {
+        todoList.add(title);
+        _controller.clear();
+      }
     });
   }
 }
